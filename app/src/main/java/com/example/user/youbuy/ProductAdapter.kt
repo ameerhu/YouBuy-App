@@ -1,6 +1,6 @@
 package com.example.user.youbuy
 
-import android.net.Uri
+import android.content.Intent
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,11 +9,11 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import com.example.user.youbuy.R.id.imageView
 import android.graphics.BitmapFactory
-import android.graphics.Bitmap
-import java.io.InputStream
+import android.os.Bundle
+import android.support.v4.content.ContextCompat.startActivity
 import java.net.URL
+import java.io.Serializable
 
 
 class ProductAdapter(val productList: ArrayList<Model.Product>): RecyclerView.Adapter<ProductAdapter.ViewHolder>() {
@@ -33,21 +33,23 @@ class ProductAdapter(val productList: ArrayList<Model.Product>): RecyclerView.Ad
         p0.username.text = product.owner?.username
         p0.postedDate.text = product?.postedDate
         p0.pName.text = product?.name + "  |  " + product?.price + " €"
-        p0.pDescription.text = "Description: \n\t" + product?.description
 Log.e("URL : -------- ", product.images?.get(0))
-        val url = URL(product.images?.get(0));
-//        val url = URL("https://assets.exercism.io/tracks/java-bordered-turquoise.png")
-//        p0.pImage.setImageBitmap(url.content as Bitmap)
+        val url = URL(product.images?.get(0))
         val bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream())
         p0.pImage.setImageBitmap(bmp)
-
+        p0.pImage.setOnClickListener { view ->
+            Log.e("Image Click Detail: ",product.toString())
+            val intent = Intent(view.context,ProductDetail::class.java).apply {
+                putExtra("product",product as Serializable)
+            }
+            startActivity(view.context,intent, Bundle())
+        }
     }
 
     class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
         val username = itemView.findViewById(R.id.username) as TextView
         val postedDate = itemView.findViewById(R.id.postedDate) as TextView
         val pName = itemView.findViewById(R.id.pName) as TextView
-        val pDescription = itemView.findViewById(R.id.pDescription) as TextView
         val pImage = itemView.findViewById(R.id.pImage) as ImageView
         val button = itemView.findViewById(R.id.button) as Button
         val button2 = itemView.findViewById(R.id.button2) as Button

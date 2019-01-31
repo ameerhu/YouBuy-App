@@ -2,10 +2,8 @@ package com.example.user.youbuy;
 
 import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.widget.LinearLayout;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -22,18 +20,23 @@ public class GetProducts extends AppCompatActivity {
     public Model.Product myProduct[];
 //    String URL = "http://localhost:3000/api/Products";
 //    String URL = "https://rocky-ocean-68053.herokuapp.com/api/Products";
-    String URL = "https://rocky-ocean-68053.herokuapp.com/api/Products?filter[where][status]=approved";
+    String URL = "https://rocky-ocean-68053.herokuapp.com/api/Products?filter[where][status]=approved&filter[order]=postedDate DESC";
     RecyclerView recyclerView;
+    String filter = null;
 Context context;
 
-    protected void GetProducts (Context context) {
+    protected GetProducts (Context context, String filter) {
         this.context = context;
+        this.filter = filter;
         Log.e("Api "," --------------- onCreate");
-        recyclerView = findViewById(R.id.recyclerView1);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext(),LinearLayout.VERTICAL,false));
+        if(filter != "")
+            URL = URL + "&filter[where][name][regexp]=^"+filter+"/i";
+        System.out.println("Filtered URL: " +URL);
+//        recyclerView = findViewById(R.id.recyclerView1);
+//        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext(),LinearLayout.VERTICAL,false));
     }
 
-    protected Model.Product[] getAllProducts(final Context context, final RecyclerView recyclerView){
+    protected Model.Product[] getAllProducts(final RecyclerView recyclerView){
         Log.e("Api "," --------------- Xalled");
         RequestQueue requestQueue = Volley.newRequestQueue(context);
         JsonArrayRequest objectRequest = new JsonArrayRequest(
@@ -48,7 +51,7 @@ Context context;
                         Log.e("--  Product Detail : ", myProduct[0].toString());
                         ArrayList<Model.Product> productList = new ArrayList<Model.Product>(Arrays.asList(myProduct));
 //                        recyclerView = findViewById(R.id.recyclerView1);
-                        recyclerView.setLayoutManager(new LinearLayoutManager(context,LinearLayout.VERTICAL,false));
+//                        recyclerView.setLayoutManager(new LinearLayoutManager(context,LinearLayout.VERTICAL,false));
                         recyclerView.setAdapter(new ProductAdapter(productList));
                         }
                 },

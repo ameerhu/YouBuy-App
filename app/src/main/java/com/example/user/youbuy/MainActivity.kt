@@ -25,7 +25,10 @@ import java.io.IOException
 
 import java.util.*
 import android.os.StrictMode
-
+import android.view.KeyEvent
+import android.app.Activity
+import android.view.View
+import android.view.inputmethod.InputMethodManager
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -43,9 +46,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val recyclerView = findViewById(R.id.recyclerView1) as RecyclerView
         recyclerView.layoutManager = LinearLayoutManager(this,LinearLayout.VERTICAL,false)
 //        products data from api
-        println("calling to api::::::::::")
-          GetProducts().getAllProducts(this,recyclerView)
-//        GetProductList().execute()
+          GetProducts(this,"").getAllProducts(recyclerView)
         println("Called api :::::::::::::")
 
 
@@ -53,6 +54,26 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show()
             Toast.makeText(this,"Msg",Toast.LENGTH_LONG).show()
+        }
+
+        imageButton.setOnClickListener { view ->
+            if(!searchTerm.text.toString().isEmpty())
+                GetProducts(this,searchTerm.text.toString()).getAllProducts(recyclerView)
+            Toast.makeText(this,"Click on search",Toast.LENGTH_LONG).show()
+            hideKeyboard(view)
+        }
+
+        searchTerm.setOnKeyListener { v, keyCode, event ->
+            if(event.action == KeyEvent.ACTION_UP)
+                if(searchTerm.text.toString().isEmpty())
+                    GetProducts(this,"").getAllProducts(recyclerView)
+                if(keyCode == KeyEvent.KEYCODE_ENTER){
+                    if(!searchTerm.text.toString().isEmpty())
+                        GetProducts(this,searchTerm.text.toString()).getAllProducts(recyclerView)
+                    Toast.makeText(this,"Key Processed code: "+event.keyCode,Toast.LENGTH_LONG).show()
+                    hideKeyboard(v)
+                }
+             false
         }
 
         val toggle = ActionBarDrawerToggle(
@@ -72,6 +93,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    fun hideKeyboard(view: View) {
+        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+    }
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main, menu)
