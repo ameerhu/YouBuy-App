@@ -17,8 +17,10 @@ import java.io.Serializable
 
 
 class ProductAdapter(val productList: ArrayList<Model.Product>): RecyclerView.Adapter<ProductAdapter.ViewHolder>() {
+    var sm: SessionManager? = null
     override fun onCreateViewHolder(p0: ViewGroup, p1: Int): ViewHolder {
         val v = LayoutInflater.from(p0?.context).inflate(R.layout.content_product,p0,false)
+        sm = SessionManager(p0?.context)
         return ViewHolder(v)
     }
 
@@ -38,11 +40,17 @@ Log.e("URL : -------- ", product.images?.get(0))
         val bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream())
         p0.pImage.setImageBitmap(bmp)
         p0.pImage.setOnClickListener { view ->
-            Log.e("Image Click Detail: ",product.toString())
-            val intent = Intent(view.context,ProductDetail::class.java).apply {
-                putExtra("product",product as Serializable)
-            }
-            startActivity(view.context,intent, Bundle())
+            Log.e("Image Click Detail: ", product.toString())
+
+//            sm!!.logout()
+//            Log.e("Logout", "Data should be removed from shared preferences")
+
+            var intent: Intent
+            if(sm!!.isLogin())
+                intent = Intent(view.context,ProductDetail::class.java).apply {putExtra("product",product as Serializable)}
+            else
+            intent = Intent(view.context,LoginActivity::class.java).apply {putExtra("product",product as Serializable)}
+            view.context.startActivity(intent)
         }
     }
 

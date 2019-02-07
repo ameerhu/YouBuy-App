@@ -2,8 +2,10 @@ package com.example.user.youbuy;
 
 import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.widget.LinearLayout;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -50,8 +52,8 @@ Context context;
                         myProduct = gson.fromJson(response.toString(),Model.Product[].class);
                         Log.e("--  Product Detail : ", myProduct[0].toString());
                         ArrayList<Model.Product> productList = new ArrayList<Model.Product>(Arrays.asList(myProduct));
-//                        recyclerView = findViewById(R.id.recyclerView1);
-//                        recyclerView.setLayoutManager(new LinearLayoutManager(context,LinearLayout.VERTICAL,false));
+                        //recyclerView = (RecyclerView) findViewById(R.id.recyclerView1);
+                        recyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayout.VERTICAL,false));
                         recyclerView.setAdapter(new ProductAdapter(productList));
                         }
                 },
