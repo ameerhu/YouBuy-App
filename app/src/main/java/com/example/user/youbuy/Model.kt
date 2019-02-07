@@ -3,6 +3,14 @@ package com.example.user.youbuy
 
 object Model {
 
+    data class UserLogin(
+        val id:String?,
+        val ttl:Number?,
+        val created: String?,
+        val userId: String?,
+        val user: Customer
+    ) : java.io.Serializable
+
     data class Customer(
         val id: String?,
         val name: String?,

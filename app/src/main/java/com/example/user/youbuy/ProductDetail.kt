@@ -3,6 +3,7 @@ package com.example.user.youbuy
 import android.graphics.BitmapFactory
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import kotlinx.android.synthetic.main.activity_product_detail.*
 import java.net.URL
 
@@ -13,6 +14,7 @@ class ProductDetail : AppCompatActivity() {
         setContentView(R.layout.activity_product_detail)
 
         val product = intent.extras.get("product") as Model.Product
+        Log.e("Product ", product.toString())
         username.text = username.text.toString() + " " + product.owner?.username
         postedDate.text = postedDate.text.toString() + " " + product?.postedDate
         pName.text = pName.text.toString() + " " + product?.name
