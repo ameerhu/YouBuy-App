@@ -17,7 +17,6 @@ import kotlinx.android.synthetic.main.content_main.*
 import android.os.StrictMode
 import android.view.KeyEvent
 import android.app.Activity
-import android.content.ClipData
 import android.content.Intent
 import android.util.Log
 import android.view.View
@@ -28,6 +27,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private val KEY: Int = 11111
     private var sm: SessionManager? = null
+    private var recyclerView: RecyclerView? = null
+    var URL :String = "https://rocky-ocean-68053.herokuapp.com/api/Products?filter[where][status]=approved&filter[order]=postedDate DESC"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -39,37 +40,55 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             StrictMode.setThreadPolicy(policy)
         }
 
-        var recyclerView = findViewById(R.id.recyclerView1) as RecyclerView
+         recyclerView = findViewById(R.id.recyclerView1) as RecyclerView
 //        products data from api
-          GetProducts(this,"").getAllProducts(recyclerView)
+          GetProducts(this, URL,"").getAllProducts(recyclerView, textView1)
         println("Called api :::::::::::::")
 
 
         fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
-            Toast.makeText(this,"Msg",Toast.LENGTH_LONG).show()
+            if(sm!!.isLogin()) {
+                val it = GetProducts.getMyProduct().iterator()
+                it.forEach {
+                    WishUnWish(view, it.id!!, sm!!.getDetailLogin().get("userid")!!,"").execute()
+                }
+                Snackbar.make(view, "You are successfully CheckOut.", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show()
+            }
+            else
+                Snackbar.make(view, "You must login first.", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show()
         }
 
         imageButton.setOnClickListener { view ->
             if(!searchTerm.text.toString().isEmpty())
-                GetProducts(this,searchTerm.text.toString()).getAllProducts(recyclerView)
+                GetProducts(this,URL,searchTerm.text.toString()).getAllProducts(recyclerView, textView1)
             Toast.makeText(this,"Click on search",Toast.LENGTH_LONG).show()
             hideKeyboard(view)
         }
 
         searchTerm.setOnKeyListener { v, keyCode, event ->
+            var filter: String = ""
             if(event.action == KeyEvent.ACTION_UP)
                 if(searchTerm.text.toString().isEmpty())
-                    GetProducts(this,"").getAllProducts(recyclerView)
+                    GetProducts(this, URL,"").getAllProducts(recyclerView, textView1)
                 if(keyCode == KeyEvent.KEYCODE_ENTER){
                     if(!searchTerm.text.toString().isEmpty())
-                        GetProducts(this,searchTerm.text.toString()).getAllProducts(recyclerView)
-                    Toast.makeText(this,"Key Processed code: "+event.keyCode,Toast.LENGTH_LONG).show()
+                        filter = "&filter[where][name][regexp]=^"+searchTerm.text.toString()+"/i"
+                            GetProducts(this, URL, filter).getAllProducts(recyclerView, textView1)
+                    //Toast.makeText(this,"Key Processed code: "+event.keyCode,Toast.LENGTH_LONG).show()
                     hideKeyboard(v)
                 }
              false
         }
+
+        searchTerm.setOnFocusChangeListener { v, hasFocus ->
+            Log.e("Focus ", "Called")
+            if(!hasFocus)
+                hideKeyboard(v)
+        }
+
+
 
         val toggle = ActionBarDrawerToggle(
             this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
@@ -92,6 +111,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     fun hideKeyboard(view: View) {
         val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+//       inputMethodManager.hideSoftInputFromWindow(this.currentFocus.windowToken,0)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -124,6 +144,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 //            R.id.action_settings -> return true
             "Logout" -> {
                 sm!!.logout()
+                if(!sm!!.isLogin())
+                    Toast.makeText(this,"You are successfully Logout",Toast.LENGTH_LONG).show()
                 return true
             }
             "Login" -> {
@@ -139,17 +161,27 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         // Handle navigation view item clicks here.
         when (item.itemId) {
-            R.id.nav_camera -> {
-                // Handle the camera action
+            R.id.product_list-> {
+                GetProducts(this, URL,"").getAllProducts(recyclerView, textView1)
+                fab.hide()
             }
-            R.id.nav_gallery -> {
-
-            }
-            R.id.nav_slideshow -> {
-
+            R.id.wish_list -> {
+                if(sm!!.isLogin()){
+                    val wishListURL = "https://rocky-ocean-68053.herokuapp.com/api/Customers/${sm!!.getDetailLogin().get("userid")}/wishlist"
+                    GetProducts(this, wishListURL,"").getAllProducts(recyclerView, textView1)
+                    fab.show()
+                }
+                else
+                    Toast.makeText(this,"You must first login",Toast.LENGTH_LONG).show()
             }
             R.id.nav_manage -> {
-
+                if(sm!!.isLogin()){
+                    val myProURL = "https://rocky-ocean-68053.herokuapp.com/api/Customers/${sm!!.getDetailLogin().get("userid")}/owns"
+                    GetProducts(this, myProURL,"").getAllProducts(recyclerView, textView1)
+                    fab.hide()
+                }
+                else
+                    Toast.makeText(this,"You must first login",Toast.LENGTH_LONG).show()
             }
             R.id.nav_share -> {
 

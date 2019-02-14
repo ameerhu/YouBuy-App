@@ -4,13 +4,14 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.view.View
+import android.widget.Toast
 import java.io.Serializable
 
 class SessionManager(val context: Context){
 //    private var sp: SharedPreferences? = null
 //    private var editor: SharedPreferences.Editor? = null
-    private val KEY_USERNAME: String? = "username"
-    private val KEY_PASSWORD: String? = "pass"
+    private val KEY_USER_ID: String? = "userid"
+    private val KEY_NAME: String? = "pass"
     private val is_Login: String? = "loginstatus"
     private val SHARE_NAME: String? = "loginsession"
     var sp = context.getSharedPreferences(SHARE_NAME,Context.MODE_PRIVATE)
@@ -19,8 +20,8 @@ class SessionManager(val context: Context){
 
     fun storeLogin(userId:String?, name:String?){
         editor.putBoolean(is_Login,true)
-        editor.putString(KEY_USERNAME, userId)
-        editor.putString(KEY_PASSWORD, name)
+        editor.putString(KEY_USER_ID, userId)
+        editor.putString(KEY_NAME, name)
         editor.commit()
     }
 
@@ -37,14 +38,18 @@ class SessionManager(val context: Context){
 
     fun getDetailLogin(): HashMap<String, String> {
         var map: HashMap<String,String> = HashMap()
-        map.put(KEY_USERNAME!!,sp.getString(KEY_USERNAME,null))
-        map.put(KEY_PASSWORD!!,sp.getString(KEY_PASSWORD,null))
+        map.put(KEY_USER_ID!!,sp.getString(KEY_USER_ID,null))
+        map.put(KEY_NAME!!,sp.getString(KEY_NAME,null))
         return map
     }
 
+    fun showDetail(): String{
+        return " ${sp.getBoolean(is_Login, false)} ${sp.getString(KEY_USER_ID, null)} ${sp.getString(KEY_NAME, null)}"
+    }
+
     fun logout(){
-        val sharedpreferences = context.getSharedPreferences(SHARE_NAME, Context.MODE_PRIVATE)
-        val editor: SharedPreferences.Editor = sharedpreferences.edit()
+        //val sharedpreferences = context.getSharedPreferences(SHARE_NAME, Context.MODE_PRIVATE)
+        //val editor: SharedPreferences.Editor = sharedpreferences.edit()
         editor.clear()
         editor.commit()
     }

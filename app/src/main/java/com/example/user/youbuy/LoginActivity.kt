@@ -290,8 +290,8 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                     Response.Listener { response ->
                         val gson = GsonBuilder().create()
                         var userInfo: Model.UserLogin = gson.fromJson(response.toString(), Model.UserLogin::class.java)
-                        sm!!.storeLogin(userInfo.id, userInfo.user.username)
-                        Toast.makeText(applicationContext,"Successfully Login",Toast.LENGTH_LONG).show()
+                        sm!!.storeLogin(userInfo.userId, userInfo.user.username)
+                            Toast.makeText(applicationContext,"Successfully Login",Toast.LENGTH_LONG).show()
                         Log.e("Response: ", userInfo.toString())
                         if(!pDetailCall) {
                             intent = Intent(applicationContext, ProductDetail::class.java).apply {
@@ -300,7 +300,11 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                             applicationContext.startActivity(intent)
                         }
                     },
-                    Response.ErrorListener { error -> Log.e("Error Response ", error.toString()) }
+                    Response.ErrorListener { error ->
+                        Log.e("Error Response ", error.toString())
+                        Toast.makeText(applicationContext,"Check username/password",Toast.LENGTH_LONG).show()
+                        applicationContext.startActivity(intent)
+                    }
                 )
 
                 requestQueue.add(objectRequest)

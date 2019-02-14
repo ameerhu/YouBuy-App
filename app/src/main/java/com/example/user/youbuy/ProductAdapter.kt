@@ -10,8 +10,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.graphics.BitmapFactory
-import android.os.Bundle
-import android.support.v4.content.ContextCompat.startActivity
+import android.widget.Toast
 import java.net.URL
 import java.io.Serializable
 
@@ -35,22 +34,43 @@ class ProductAdapter(val productList: ArrayList<Model.Product>): RecyclerView.Ad
         p0.username.text = product.owner?.username
         p0.postedDate.text = product?.postedDate
         p0.pName.text = product?.name + "  |  " + product?.price + " €"
-Log.e("URL : -------- ", product.images?.get(0))
         val url = URL(product.images?.get(0))
         val bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream())
         p0.pImage.setImageBitmap(bmp)
         p0.pImage.setOnClickListener { view ->
             Log.e("Image Click Detail: ", product.toString())
-
-//            sm!!.logout()
-//            Log.e("Logout", "Data should be removed from shared preferences")
-
             var intent: Intent
             if(sm!!.isLogin())
                 intent = Intent(view.context,ProductDetail::class.java).apply {putExtra("product",product as Serializable)}
             else
             intent = Intent(view.context,LoginActivity::class.java).apply {putExtra("product",product as Serializable)}
             view.context.startActivity(intent)
+        }
+
+        if(sm!!.isLogin()){
+            Log.e("Data: ", sm!!.showDetail())
+            if(product.customerToWish!!.isNotEmpty()){
+                val it = product.customerToWish?.iterator()
+                it?.forEach {
+                    if(it.id==sm!!.getDetailLogin().get("userid")){
+                    Log.e("cust id & Wish id", it.id + " & " + sm!!.getDetailLogin().get("userid") )
+                        p0.button.text = "UnWish"
+                        //return
+                    }
+                }
+            }
+        }
+
+        Log.e("Listener add: ", p0.button.text.toString())
+        p0.button.setOnClickListener { view->
+            if(sm!!.isLogin())
+                WishUnWish(view, product.id!!, sm!!.getDetailLogin().get("userid")!!,p0.button.text.toString()).execute()
+            else
+                Toast.makeText(view.context,"Your are not Login", Toast.LENGTH_LONG).show()
+        }
+
+        fun getProduct(): ArrayList<Model.Product>{
+            return productList
         }
     }
 
@@ -59,8 +79,6 @@ Log.e("URL : -------- ", product.images?.get(0))
         val postedDate = itemView.findViewById(R.id.postedDate) as TextView
         val pName = itemView.findViewById(R.id.pName) as TextView
         val pImage = itemView.findViewById(R.id.pImage) as ImageView
-        val button = itemView.findViewById(R.id.button) as Button
-        val button2 = itemView.findViewById(R.id.button2) as Button
-        val button3 = itemView.findViewById(R.id.button3) as Button
+        var button = itemView.findViewById(R.id.button) as Button
     }
 }

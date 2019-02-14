@@ -5,7 +5,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -19,26 +22,28 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class GetProducts extends AppCompatActivity {
-    public Model.Product myProduct[];
+    public static Model.Product[] myProduct;
 //    String URL = "http://localhost:3000/api/Products";
 //    String URL = "https://rocky-ocean-68053.herokuapp.com/api/Products";
-    String URL = "https://rocky-ocean-68053.herokuapp.com/api/Products?filter[where][status]=approved&filter[order]=postedDate DESC";
-    RecyclerView recyclerView;
+//    String URL = "https://rocky-ocean-68053.herokuapp.com/api/Products?filter[where][status]=approved&filter[order]=postedDate DESC";
+        String URL;
     String filter = null;
-Context context;
+    Context context;
 
-    protected GetProducts (Context context, String filter) {
+    protected GetProducts(){}
+
+    protected GetProducts (Context context, String URL, String filter) {
         this.context = context;
         this.filter = filter;
         Log.e("Api "," --------------- onCreate");
+        this.URL = URL;
         if(filter != "")
-            URL = URL + "&filter[where][name][regexp]=^"+filter+"/i";
+//            this.URL = this.URL + "&filter[where][name][regexp]=^"+filter+"/i";
+            this.URL = this.URL + filter;
         System.out.println("Filtered URL: " +URL);
-//        recyclerView = findViewById(R.id.recyclerView1);
-//        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext(),LinearLayout.VERTICAL,false));
     }
 
-    protected Model.Product[] getAllProducts(final RecyclerView recyclerView){
+    protected Model.Product[] getAllProducts(final RecyclerView recyclerView, final TextView textView1){
         Log.e("Api "," --------------- Xalled");
         RequestQueue requestQueue = Volley.newRequestQueue(context);
         JsonArrayRequest objectRequest = new JsonArrayRequest(
@@ -48,25 +53,39 @@ Context context;
                 new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
-                        Gson gson = new GsonBuilder().create();
-                        myProduct = gson.fromJson(response.toString(),Model.Product[].class);
-                        Log.e("--  Product Detail : ", myProduct[0].toString());
-                        ArrayList<Model.Product> productList = new ArrayList<Model.Product>(Arrays.asList(myProduct));
-                        //recyclerView = (RecyclerView) findViewById(R.id.recyclerView1);
-                        recyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayout.VERTICAL,false));
-                        recyclerView.setAdapter(new ProductAdapter(productList));
+                        Log.e("response : ",response.toString());
+                            Gson gson = new GsonBuilder().create();
+                            myProduct = gson.fromJson(response.toString(),Model.Product[].class);
+                            ArrayList<Model.Product> productList = new ArrayList<Model.Product>(Arrays.asList(myProduct));
+                            recyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayout.VERTICAL,false));
+                            recyclerView.setAdapter(new ProductAdapter(productList));
+                            textView1.setVisibility(View.INVISIBLE);
+                            recyclerView.setVisibility(View.VISIBLE);
+
+                        if(response.toString().equals("[]")){
+                            textView1.setText("There is no product to show.");
+                            recyclerView.setVisibility(View.INVISIBLE);
+                            textView1.setVisibility(View.VISIBLE);
+                        }
                         }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.e("Error Response ",error.toString());
+                        textView1.setText("Check your internet & re-run App.");
+                        recyclerView.setVisibility(View.INVISIBLE);
+                        textView1.setVisibility(View.VISIBLE);
                     }
                 }
         );
 
         requestQueue.add(objectRequest);
         Log.e("Called", "its already executed.");
+        return myProduct;
+    }
+
+    public static Model.Product[] getMyProduct() {
         return myProduct;
     }
 }
